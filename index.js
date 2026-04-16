@@ -1,9 +1,16 @@
 const express = require('express');
 const cors = require('cors');
+const dns = require('dns');
 const app = express();
 
 app.use(cors({ optionsSuccessStatus: 200 }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
+
+// URL Shortener storage
+const urlStore = [];
+let urlCounter = 1;
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html');
@@ -16,6 +23,37 @@ app.get('/api/whoami', (req, res) => {
     language: req.headers['accept-language'],
     software: req.headers['user-agent']
   });
+});
+
+// URL Shortener Microservice
+app.post('/api/shorturl', (req, res) => {
+  const { url } = req.body;
+
+  try {
+    const urlObj = new URL(url);
+    if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+      return res.json({ error: 'invalid url' });
+    }
+    dns.lookup(urlObj.hostname, (err) => {
+      if (err) {
+        return res.json({ error: 'invalid url' });
+      }
+      const short_url = urlCounter++;
+      urlStore.push({ short_url, original_url: url });
+      res.json({ original_url: url, short_url });
+    });
+  } catch (e) {
+    return res.json({ error: 'invalid url' });
+  }
+});
+
+app.get('/api/shorturl/:short', (req, res) => {
+  const short = parseInt(req.params.short);
+  const entry = urlStore.find(u => u.short_url === short);
+  if (!entry) {
+    return res.json({ error: 'No short URL found' });
+  }
+  res.redirect(entry.original_url);
 });
 
 // Timestamp Microservice
