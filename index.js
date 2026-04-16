@@ -32,6 +32,15 @@ app.get('/api/:date?', (req, res) => {
   });
 });
 
+// Header Parser Microservice
+app.get('/api/whoami', (req, res) => {
+  res.json({
+    ipaddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+    language: req.headers['accept-language'],
+    software: req.headers['user-agent']
+  });
+});
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Timestamp microservice listening on port ${port}`);
