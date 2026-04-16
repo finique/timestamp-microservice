@@ -9,6 +9,16 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+// Header Parser Microservice
+app.get('/api/whoami', (req, res) => {
+  res.json({
+    ipaddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+    language: req.headers['accept-language'],
+    software: req.headers['user-agent']
+  });
+});
+
+// Timestamp Microservice
 app.get('/api/:date?', (req, res) => {
   const { date } = req.params;
 
@@ -29,15 +39,6 @@ app.get('/api/:date?', (req, res) => {
   res.json({
     unix: dateObj.getTime(),
     utc: dateObj.toUTCString()
-  });
-});
-
-// Header Parser Microservice
-app.get('/api/whoami', (req, res) => {
-  res.json({
-    ipaddress: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
-    language: req.headers['accept-language'],
-    software: req.headers['user-agent']
   });
 });
 
