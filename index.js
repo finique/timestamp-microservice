@@ -9,12 +9,8 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-app.get('/api/:date', handleDate);
-app.get('/api/', handleDate);
-app.get('/api', handleDate);
-
-function handleDate(req, res) {
-  const date = req.params.date;
+app.get('/api/:date?', (req, res) => {
+  const { date } = req.params;
 
   let dateObj;
 
@@ -34,7 +30,7 @@ function handleDate(req, res) {
     unix: dateObj.getTime(),
     utc: dateObj.toUTCString()
   });
-}
+});
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
